@@ -14,9 +14,11 @@ export const register = async (req, res) => {
                 success: false
             });
         };
-        const file = req.file;
-        const fileUri = getDataUri(file);
-        const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+       let cloudResponse = null;
+if (req.file) {
+  const fileUri = getDataUri(req.file);
+  cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+}
 
         const user = await User.findOne({ email });
         if (user) {
@@ -34,7 +36,7 @@ export const register = async (req, res) => {
             password: hashedPassword,
             role,
             profile:{
-                profilePhoto:cloudResponse.secure_url,
+                profilePhoto:cloudResponse?.secure_url || "",
             }
         });
 
@@ -43,11 +45,18 @@ export const register = async (req, res) => {
             success: true
         });
     } catch (error) {
-        console.log(error);
-    }
+  console.error(error);
+  return res.status(500).json({
+    message: "Registration failed",
+    success: false
+  });
+}
+
 }
 export const login = async (req, res) => {
-    try {
+  
+     try {
+          console.log("LOGIN BODY:", req.body);
         const { email, password, role } = req.body;
         
         if (!email || !password || !role) {
@@ -91,15 +100,27 @@ export const login = async (req, res) => {
             role: user.role,
             profile: user.profile
         }
+        console.log("LOGIN SUCCESS");
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
+     return res.status(200).cookie("token", token, {
+         maxAge: 86400000,
+         httpOnly: true,
+         sameSite: "lax",
+         secure: false
+           }).json({
+ 
             message: `Welcome back ${user.fullname}`,
             user,
             success: true
         })
     } catch (error) {
-        console.log(error);
-    }
+  console.error(error);
+  return res.status(500).json({
+    message: "Login failed",
+    success: false
+  });
+}
+
 }
 export const logout = async (req, res) => {
     try {
@@ -108,21 +129,27 @@ export const logout = async (req, res) => {
             success: true
         })
     } catch (error) {
-        console.log(error);
-    }
+  console.error(error);
+  return res.status(500).json({
+    message: "Logout failed",
+    success: false
+  });
+}
+
 }
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
         
-        const file = req.file;
-        // cloudinary ayega idhar
-        const fileUri = getDataUri(file);
-        const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+        if (req.file) {
+  const fileUri = getDataUri(req.file);
+  const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
 
+  user.profile.resume = cloudResponse.secure_url;
+  user.profile.resumeOriginalName = req.file.originalname;
+}
 
-
-        let skillsArray;
+       let skillsArray;
         if(skills){
             skillsArray = skills.split(",");
         }
@@ -148,8 +175,7 @@ export const updateProfile = async (req, res) => {
             user.profile.resumeOriginalName = file.originalname // Save the original file name
         }
 
-
-        await user.save();
+         await user.save();
 
         user = {
             _id: user._id,
@@ -165,7 +191,12 @@ export const updateProfile = async (req, res) => {
             user,
             success:true
         })
-    } catch (error) {
-        console.log(error);
-    }
+    }catch (error) {
+  console.error(error);
+  return res.status(500).json({
+    message: "Profile update failed",
+    success: false
+  });
+}
+
 }

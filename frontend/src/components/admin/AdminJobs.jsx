@@ -8,7 +8,7 @@ import AdminJobsTable from './AdminJobsTable'
 import useGetAllAdminJobs from '@/hooks/useGetAllAdminJobs'
 import { setSearchJobByText } from '@/redux/jobSlice'
 
-const AdminJobs = () => {
+const       AdminJobs = () => {
   useGetAllAdminJobs();
   const [input, setInput] = useState("");
   const navigate = useNavigate();
@@ -35,4 +35,4 @@ const AdminJobs = () => {
   )
 }
 
-export default AdminJobs
+export default AdminJobs;

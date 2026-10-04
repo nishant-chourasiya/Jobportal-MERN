@@ -36,9 +36,9 @@ export const getCompany = async (req, res) => {
     try {
         const userId = req.id; // logged in user id
         const companies = await Company.find({ userId });
-        if (!companies) {
+        if (!companies || companies.length === 0) {
             return res.status(404).json({
-                message: "Companies not found.",
+                message: "No companies found.",
                 success: false
             })
         }
@@ -48,6 +48,10 @@ export const getCompany = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Failed to fetch companies.",
+            success: false
+        });
     }
 }
 // get company by id
@@ -67,6 +71,10 @@ export const getCompanyById = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Failed to fetch company details.",
+            success: false
+        });
     }
 }
 export const updateCompany = async (req, res) => {
@@ -74,12 +82,22 @@ export const updateCompany = async (req, res) => {
         const { name, description, website, location } = req.body;
  
         const file = req.file;
-        // idhar cloudinary ayega
-        const fileUri = getDataUri(file);
-        const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-        const logo = cloudResponse.secure_url;
-    
-        const updateData = { name, description, website, location, logo };
+        const updateData = { name, description, website, location };
+
+        // Only upload logo if file is provided
+        if (file) {
+            try {
+                const fileUri = getDataUri(file);
+                const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+                updateData.logo = cloudResponse.secure_url;
+            } catch (uploadError) {
+                console.log("Cloudinary upload error:", uploadError);
+                return res.status(400).json({
+                    message: "Error uploading logo. Please try again.",
+                    success: false
+                });
+            }
+        }
 
         const company = await Company.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
@@ -91,10 +109,53 @@ export const updateCompany = async (req, res) => {
         }
         return res.status(200).json({
             message:"Company information updated.",
+            company,
             success:true
         })
 
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Failed to update company information.",
+            success: false
+        });
+    }
+}
+
+export const deleteCompany = async (req, res) => {
+    try {
+        const companyId = req.params.id;
+        const userId = req.id;
+
+        // Find the company
+        const company = await Company.findById(companyId);
+        if (!company) {
+            return res.status(404).json({
+                message: "Company not found.",
+                success: false
+            });
+        }
+
+        // Verify user is the owner of the company
+        if (company.userId.toString() !== userId.toString()) {
+            return res.status(403).json({
+                message: "You are not authorized to delete this company.",
+                success: false
+            });
+        }
+
+        // Delete the company
+        await Company.findByIdAndDelete(companyId);
+
+        return res.status(200).json({
+            message: "Company deleted successfully.",
+            success: true
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Failed to delete company.",
+            success: false
+        });
     }
 }

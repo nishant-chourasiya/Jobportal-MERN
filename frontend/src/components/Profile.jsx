@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Navbar from './shared/Navbar'
-import { Avatar, AvatarImage } from './ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
 import { Button } from './ui/button'
 import { Contact, Mail, Pen } from 'lucide-react'
 import { Badge } from './ui/badge'
@@ -25,7 +25,8 @@ const Profile = () => {
                 <div className='flex justify-between'>
                     <div className='flex items-center gap-4'>
                         <Avatar className="h-24 w-24">
-                            <AvatarImage src="https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg" alt="profile" />
+                            <AvatarImage src={user?.profile?.profilePhoto} alt={user?.fullname} />
+                            <AvatarFallback className="text-xl font-bold">{user?.fullname?.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
                             <h1 className='font-medium text-xl'>{user?.fullname}</h1>
@@ -59,8 +60,10 @@ const Profile = () => {
                     }
                 </div>
             </div>
-            <div className='max-w-4xl mx-auto bg-white rounded-2xl'>
-                <h1 className='font-bold text-lg my-5'>Applied Jobs</h1>
+            <div className='max-w-4xl mx-auto bg-white rounded-2xl border border-gray-200 my-5 p-8'>
+                <h1 className='font-bold text-lg my-5 flex items-center gap-2'>
+                    📋 Applied Jobs
+                </h1>
                 {/* Applied Job Table   */}
                 <AppliedJobTable />
             </div>

@@ -21,7 +21,7 @@ const CompanySetup = () => {
         location: "",
         file: null
     });
-    const {singleCompany} = useSelector(store=>store.company);
+    const { singleCompany } = useSelector(store => store.company);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -41,7 +41,8 @@ const CompanySetup = () => {
         formData.append("description", input.description);
         formData.append("website", input.website);
         formData.append("location", input.location);
-        if (input.file) {
+
+        if (input.file && input.file instanceof File) {
             formData.append("file", input.file);
         }
         try {
@@ -59,20 +60,25 @@ const CompanySetup = () => {
         } catch (error) {
             console.log(error);
             toast.error(error.response.data.message);
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     }
 
     useEffect(() => {
-        setInput({
-            name: singleCompany.name || "",
-            description: singleCompany.description || "",
-            website: singleCompany.website || "",
-            location: singleCompany.location || "",
-            file: singleCompany.file || null
-        })
-    },[singleCompany]);
+        if (singleCompany) {
+            setInput({
+                name: singleCompany.name || "",
+                description: singleCompany.description || "",
+                website: singleCompany.website || "",
+                location: singleCompany.location || "",
+                file: null
+            })
+
+        }
+
+    }, [singleCompany]);
 
     return (
         <div>
@@ -125,6 +131,13 @@ const CompanySetup = () => {
                         </div>
                         <div>
                             <Label>Logo</Label>
+
+                            {singleCompany?.logo && (
+                                <div className="my-2">
+                                    <img src={singleCompany.logo} alt="Current Logo" className="w-20 h-20 object-cover rounded" />
+                                    <p className="text-xs text-gray-500">Current Logo</p>
+                                </div>
+                            )}
                             <Input
                                 type="file"
                                 accept="image/*"
@@ -142,4 +155,4 @@ const CompanySetup = () => {
     )
 }
 
-export default CompanySetup
+export default CompanySetup;

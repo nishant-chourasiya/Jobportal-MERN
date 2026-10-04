@@ -27,6 +27,7 @@ const Job = ({job}) => {
                 <Button className="p-6" variant="outline" size="icon">
                     <Avatar>
                         <AvatarImage src={job?.company?.logo} />
+                    
                     </Avatar>
                 </Button>
                 <div>

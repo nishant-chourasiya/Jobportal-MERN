@@ -82,4 +82,4 @@ const JobDescription = () => {
     )
 }
 
-export default JobDescription
+export default JobDescription;
