@@ -16,7 +16,7 @@ const Login = () => {
     const [input, setInput] = useState({
         email: "",
         password: "",
-        role: "",
+        role: "student",
     });
     const { loading,user } = useSelector(store => store.auth);
     const navigate = useNavigate();
@@ -28,7 +28,13 @@ const Login = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
-      
+
+        // client-side validation to prevent sending incomplete payload
+        if (!input.email || !input.password || !input.role) {
+            toast.error('Please provide email, password and select role');
+            return;
+        }
+
         try {
             dispatch(setLoading(true));
             const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
