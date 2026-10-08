@@ -102,12 +102,14 @@ export const login = async (req, res) => {
         }
         console.log("LOGIN SUCCESS");
 
-     return res.status(200).cookie("token", token, {
+     const cookieOptions = {
          maxAge: 86400000,
          httpOnly: true,
-         sameSite: "lax",
-         secure: false
-           }).json({
+         sameSite: req.secure ? "none" : "lax",
+         secure: req.secure,
+         path: "/"
+     };
+     return res.status(200).cookie("token", token, cookieOptions).json({
  
             message: `Welcome back ${user.fullname}`,
             user,
@@ -124,7 +126,13 @@ export const login = async (req, res) => {
 }
 export const logout = async (req, res) => {
     try {
-        return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+        return res.status(200).cookie("token", "", {
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: req.secure ? "none" : "lax",
+            secure: req.secure,
+            path: "/"
+        }).json({
             message: "Logged out successfully.",
             success: true
         })
