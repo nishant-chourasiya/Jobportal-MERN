@@ -73,7 +73,8 @@ app.use(cookieParser());
 // ✅ Allowed origins (dev + prod)
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://frontend-git-main-nishant-chourasiyas-projects.vercel.app"
+  "https://frontend-git-main-nishant-chourasiyas-projects.vercel.app",
+  "https://frontend-mocha-alpha-80.vercel.app"
 ];
 
 const corsOptions = {
