@@ -71,24 +71,26 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ✅ Allowed origins (dev + prod)
-const allowedOrigins = [
+const configuredOrigins = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+const allowedOrigins = new Set([
   "http://localhost:5173",
   "https://frontend-git-main-nishant-chourasiyas-projects.vercel.app",
-  "https://frontend-mocha-alpha-80.vercel.app"
-];
+  "https://frontend-mocha-alpha-80.vercel.app",
+  ...configuredOrigins
+]);
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
   },
-  credentials: true
-};
-
-app.use(cors(corsOptions));
+  credentials: true,
+  methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.set("trust proxy", true);
 
